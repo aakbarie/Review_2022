@@ -1,2 +1,6 @@
 # Review_2022
-Review notes of Elements of Statistical Learning
+
+refresher of notes from stats course on Elements of Statistical Learning
+
+- Hw1:  
+- HW2: Linear Regression with subset selection  
