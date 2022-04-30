@@ -1,4 +1,4 @@
-# Review_2022
+# Stats Review 2022
 
 refresher of notes from stats course on Elements of Statistical Learning
 
