@@ -1,6 +1,6 @@
 # Stats Review 2022
 
-refresher of notes from stats course on Elements of Statistical Learning
+refresher from stats course on Elements of Statistical Learning 2011 and updated with Tidyverse and Tidymodels
 
-- Hw1:  
-- HW2: Linear Regression with subset selection  
+- Hw1: On supervised Learning
+- HW2: On linear regression with subset selection  

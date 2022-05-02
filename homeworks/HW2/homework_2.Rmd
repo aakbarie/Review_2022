@@ -1,0 +1,196 @@
+---
+title: "Homework 2 – Chapter 3"
+subtitle: "Linear regression model using subsets selection methods"
+author: "Akbar Akbari Esfahani"
+date: "4/30/2022"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+options(
+  "scipen" = 100, 
+  "digits" = 2
+)
+library(MASS)
+library(tidyverse)
+library(tidymodels)
+library(MCMCpack)
+```
+
+## Data
+
+The data is from a city assessor that was interested in predicting home sale prices as a function of various characteristics of the home and the surrounding property. The data consists of sale price, finished square feet, # of bedrooms, # of bathrooms, AC, garage size (# of cars fitted), pool, year built, quality (1=high q, 2=med q, 3=low q), style, lot size, and adjacency to highway (1=yes, 0=no). 
+
+> For homework purposes, data processing is not expected 
+
+Read in data and look at variables and data structure
+```{r data_read}
+re_data <- read_table("data/RealEstateSales.txt") %>% 
+  glimpse()
+```
+
+As a first step of performing the required tasks of the homework, we need to create a training and testing set for the data
+
+```{r train_test}
+set.seed(314)
+# Create a split object
+re_split <- 
+  initial_split(
+    re_data, prop = 0.75, strata = price
+  )
+# Build training data set
+re_training <- 
+  re_split %>% 
+  training()
+
+# Build testing data set
+re_test <- 
+  re_split %>% 
+  testing()
+```
+
+Running the model on all the data to create the base score
+
+```{r modeling}
+base_model <- lm(price ~ ., re_training)
+summary(base_model)
+```
+## Backward selection method
+
+We will use the stepAIC function from MASS library
+
+```{r backw_model}
+bk_selection <- stepAIC(base_model, direction = "backward")
+bk_selection$anova
+
+```
+
+Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:
+
+> price = area + bed + ac + grsize + age + qu + style + lotsize + hgway
+
+with an AIC of 8603.97
+
+
+```{r bw_fin_mod}
+bw_model <- 
+  lm(
+    price ~ area + bed + ac + grsize + age + qu + style + lotsize + hgway, 
+    re_training
+  )
+
+pred_test <- 
+  predict.lm(
+    bw_model,
+    re_test,
+    interval="prediction"
+  ) %>%
+  as.data.frame() %>%
+  bind_cols(re_test) %>%
+  mutate(
+    pred_diff = fit - price,
+    mean_diff = mean(pred_diff),
+    mean_lw_bound = mean(lwr),
+    mean_up_bound = mean(upr),
+    error_rate = mean_diff/mean(price)
+  ) %>%
+  dplyr::select(
+    mean_diff, mean_lw_bound, mean_up_bound, error_rate
+  ) %>%
+  distinct()
+```
+
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+
+## Forward selection method
+
+```{r fw_model}
+fw_selection <- stepAIC(base_model, direction = "forward", steps = 10000)
+fw_selection$anova
+```
+
+Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:
+
+> price = area + bed + bath + ac + grsize + pool + age + qu + style + lotsize + hgway
+
+with an AIC of 8607
+
+```{r fw_fin_mod}
+fw_model <- 
+  lm(
+    price ~ area + bed + bath + ac + grsize + pool + age + qu + style + lotsize + hgway, 
+    re_training
+  )
+
+pred_test <- 
+  predict.lm(
+    fw_model,
+    re_test,
+    interval="prediction"
+  ) %>%
+  as.data.frame() %>%
+  bind_cols(re_test) %>%
+  mutate(
+    pred_diff = fit - price,
+    mean_diff = mean(pred_diff),
+    mean_lw_bound = mean(lwr),
+    mean_up_bound = mean(upr),
+    error_rate = mean_diff/mean(price)
+  ) %>%
+  dplyr::select(
+    mean_diff, mean_lw_bound, mean_up_bound, error_rate
+  ) %>%
+  distinct()
+```
+
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+
+## Best subset selection method
+
+```{r best_model}
+best_selection <- stepAIC(base_model, direction = "both", steps = 10000)
+best_selection$anova
+```
+
+Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:
+
+> price = area + bed + ac + grsize + age + qu + style + lotsize + hgway
+
+with an AIC of 8604
+
+```{r best_fin_mod}
+best_model <- 
+  lm(
+    price ~ area + bed + ac + grsize + age + qu + style + lotsize + hgway, 
+    re_training
+  )
+
+pred_test <- 
+  predict.lm(
+    best_model,
+    re_test,
+    interval="prediction"
+  ) %>%
+  as.data.frame() %>%
+  bind_cols(re_test) %>%
+  mutate(
+    pred_diff = fit - price,
+    mean_diff = mean(pred_diff),
+    mean_lw_bound = mean(lwr),
+    mean_up_bound = mean(upr),
+    error_rate = mean_diff/mean(price)
+  ) %>%
+  dplyr::select(
+    mean_diff, mean_lw_bound, mean_up_bound, error_rate
+  ) %>%
+  distinct()
+```
+
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
