@@ -181,7 +181,7 @@ pre code {
 
 
 <h1 class="title toc-ignore">Homework 2 – Chapter 3</h1>
-<h3 class="subtitle">Linear regression model using subsets selection methods</h3>
+<h3 class="subtitle">Linear regression model using step-wise subsets selection methods</h3>
 <h4 class="author">Akbar Akbari Esfahani</h4>
 <h4 class="date">4/30/2022</h4>
 
@@ -196,7 +196,16 @@ pre code {
 </blockquote>
 <p>Read in data and look at variables and data structure</p>
 <pre class="r"><code>re_data &lt;- read_table(&quot;data/RealEstateSales.txt&quot;) %&gt;% 
-  glimpse()</code></pre>
+  glimpse() %&gt;%
+  mutate(
+    bed = as.factor(bed),
+    bath = as.factor(bath),
+    ac = as.factor(ac),
+    grsize = as.factor(ifelse(grsize &lt; 3, &quot;2 or less&quot;, &quot;3 or more&quot;)),
+    pool = as.factor(pool),
+    age = 2022 - age,
+    qu = as.factor(qu)
+  )</code></pre>
 <pre><code>## Rows: 522
 ## Columns: 12
 ## $ price   &lt;dbl&gt; 360000, 340000, 250000, 205500, 275500, 248000, 229900, 150000~
@@ -236,83 +245,96 @@ summary(base_model)</code></pre>
 ## 
 ## Residuals:
 ##     Min      1Q  Median      3Q     Max 
-## -161446  -38828   -3559   32183  261839 
+## -192259  -24384   -2374   24908  219210 
 ## 
-## Coefficients:
-##                 Estimate   Std. Error t value             Pr(&gt;|t|)    
-## (Intercept) -2353834.477   500143.732   -4.71         0.0000035479 ***
-## area             135.351        8.990   15.05 &lt; 0.0000000000000002 ***
-## bed            -7128.951     4146.220   -1.72                0.086 .  
-## bath           -4805.170     5222.493   -0.92                0.358    
-## ac            -17909.344     9869.065   -1.81                0.070 .  
-## grsize         20816.775     6676.973    3.12                0.002 ** 
-## pool             911.173    12875.016    0.07                0.944    
-## age             1252.621      252.328    4.96         0.0000010466 ***
-## qu            -52545.567     8429.395   -6.23         0.0000000012 ***
-## style          -8940.033     1675.261   -5.34         0.0000001639 ***
-## lotsize            0.704        0.291    2.42                0.016 *  
-## hgway         -37037.296    19607.543   -1.89                0.060 .  
+## Coefficients: (1 not defined because of singularities)
+##                    Estimate  Std. Error t value             Pr(&gt;|t|)    
+## (Intercept)      256433.330   57824.717    4.43     0.00001221972530 ***
+## area                110.957       8.346   13.30 &lt; 0.0000000000000002 ***
+## bed1            -158071.063   69862.255   -2.26               0.0242 *  
+## bed2            -145125.009   66834.625   -2.17               0.0305 *  
+## bed3            -145668.120   66382.464   -2.19               0.0288 *  
+## bed4            -147033.814   66420.625   -2.21               0.0275 *  
+## bed5            -136715.237   66503.922   -2.06               0.0405 *  
+## bed6            -182021.720   69785.527   -2.61               0.0095 ** 
+## bed7            -310100.452   78672.427   -3.94     0.00009699063462 ***
+## bath1             60044.384   41023.377    1.46               0.1441    
+## bath2             61512.148   39765.850    1.55               0.1228    
+## bath3             84228.244   38842.304    2.17               0.0308 *  
+## bath4             82652.038   38476.534    2.15               0.0324 *  
+## bath5             93498.426   41063.100    2.28               0.0234 *  
+## bath6           -108513.505   70041.369   -1.55               0.1222    
+## bath7                    NA          NA      NA                   NA    
+## ac1                 115.848    8717.138    0.01               0.9894    
+## grsize3 or more   34866.609    8841.036    3.94     0.00009619548232 ***
+## pool1             13410.633   11287.735    1.19               0.2356    
+## age               -1161.888     216.756   -5.36     0.00000014757639 ***
+## qu2             -123414.409   11486.269  -10.74 &lt; 0.0000000000000002 ***
+## qu3             -117445.177   15529.976   -7.56     0.00000000000032 ***
+## style             -6250.826    1465.107   -4.27     0.00002533569075 ***
+## lotsize               1.128       0.255    4.42     0.00001311574386 ***
+## hgway            -28573.910   16694.114   -1.71               0.0878 .  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
-## Residual standard error: 62800 on 377 degrees of freedom
-## Multiple R-squared:   0.8,   Adjusted R-squared:  0.794 
-## F-statistic:  137 on 11 and 377 DF,  p-value: &lt;0.0000000000000002</code></pre>
+## Residual standard error: 53200 on 365 degrees of freedom
+## Multiple R-squared:  0.861,  Adjusted R-squared:  0.853 
+## F-statistic: 98.5 on 23 and 365 DF,  p-value: &lt;0.0000000000000002</code></pre>
 </div>
 <div id="backward-selection-method" class="section level2">
 <h2>Backward selection method</h2>
 <p>We will use the stepAIC function from MASS library</p>
 <pre class="r"><code>bk_selection &lt;- stepAIC(base_model, direction = &quot;backward&quot;)</code></pre>
-<pre><code>## Start:  AIC=8607
+<pre><code>## Start:  AIC=8489
 ## price ~ area + bed + bath + ac + grsize + pool + age + qu + style + 
 ##     lotsize + hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## - pool     1     19761182 1487489258681 8605
-## - bath     1   3340169914 1490809667413 8606
-## &lt;none&gt;                    1487469497499 8607
-## - bed      1  11664156512 1499133654010 8608
-## - ac       1  12993138973 1500462636472 8608
-## - hgway    1  14077933078 1501547430577 8609
-## - lotsize  1  23059806094 1510529303593 8611
-## - grsize   1  38350793782 1525820291281 8615
-## - age      1  97233327212 1584702824711 8630
-## - style    1 112362188740 1599831686239 8633
-## - qu       1 153315512556 1640785010055 8643
-## - area     1 894267506508 2381737004007 8788
+## - ac       1       499072 1031393421722 8487
+## - pool     1   3988560818 1035381483469 8488
+## &lt;none&gt;                    1031392922650 8489
+## - hgway    1   8278351414 1039671274064 8490
+## - bed      6  54529105459 1085922028109 8497
+## - bath     6  69749490825 1101142413475 8502
+## - grsize   1  43948535885 1075341458536 8503
+## - style    1  51436046367 1082828969017 8506
+## - lotsize  1  55169021091 1086561943741 8507
+## - age      1  81193023243 1112585945894 8516
+## - qu       2 335395681838 1366788604488 8594
+## - area     1 499484822635 1530877745285 8640
 ## 
-## Step:  AIC=8605
-## price ~ area + bed + bath + ac + grsize + age + qu + style + 
+## Step:  AIC=8487
+## price ~ area + bed + bath + grsize + pool + age + qu + style + 
 ##     lotsize + hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## - bath     1   3323336670 1490812595351 8604
-## &lt;none&gt;                    1487489258681 8605
-## - bed      1  11647405885 1499136664566 8606
-## - ac       1  12973438480 1500462697161 8606
-## - hgway    1  14128753986 1501618012667 8607
-## - lotsize  1  23075072384 1510564331064 8609
-## - grsize   1  38350424166 1525839682846 8613
-## - age      1  97232989324 1584722248005 8628
-## - style    1 113314957979 1600804216660 8632
-## - qu       1 153467126784 1640956385465 8641
-## - area     1 896935104337 2384424363018 8787
+## - pool     1   4002547236 1035395968958 8486
+## &lt;none&gt;                    1031393421722 8487
+## - hgway    1   8314301582 1039707723304 8488
+## - bed      6  54597209573 1085990631295 8495
+## - bath     6  69754398081 1101147819803 8500
+## - grsize   1  43951503345 1075344925067 8501
+## - style    1  51852177423 1083245599145 8504
+## - lotsize  1  57408951579 1088802373301 8506
+## - age      1  83983751700 1115377173422 8515
+## - qu       2 336155733795 1367549155517 8592
+## - area     1 500630905774 1532024327496 8639
 ## 
-## Step:  AIC=8604
-## price ~ area + bed + ac + grsize + age + qu + style + lotsize + 
+## Step:  AIC=8486
+## price ~ area + bed + bath + grsize + age + qu + style + lotsize + 
 ##     hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## &lt;none&gt;                    1490812595351 8604
-## - hgway    1  13731315854 1504543911205 8606
-## - ac       1  13834032071 1504646627423 8606
-## - bed      1  17730052406 1508542647757 8607
-## - lotsize  1  21963137435 1512775732786 8608
-## - grsize   1  37523631151 1528336226502 8612
-## - age      1  94344535486 1585157130837 8626
-## - style    1 116261953664 1607074549015 8631
-## - qu       1 151161221753 1641973817104 8640
-## - area     1 974000034456 2464812629807 8798</code></pre>
+## &lt;none&gt;                    1035395968958 8486
+## - hgway    1   8673812844 1044069781802 8487
+## - bed      6  51831690212 1087227659170 8493
+## - bath     6  68740864007 1104136832965 8499
+## - grsize   1  43709374668 1079105343626 8500
+## - style    1  54069481566 1089465450524 8504
+## - lotsize  1  55018132274 1090414101232 8504
+## - age      1  83217610363 1118613579321 8514
+## - qu       2 333928778968 1369324747926 8591
+## - area     1 501382200974 1536778169932 8638</code></pre>
 <pre class="r"><code>bk_selection$anova</code></pre>
 <pre><code>## Stepwise Model Path 
 ## Analysis of Deviance Table
@@ -322,14 +344,14 @@ summary(base_model)</code></pre>
 ##     lotsize + hgway
 ## 
 ## Final Model:
-## price ~ area + bed + ac + grsize + age + qu + style + lotsize + 
+## price ~ area + bed + bath + grsize + age + qu + style + lotsize + 
 ##     hgway
 ## 
 ## 
 ##     Step Df   Deviance Resid. Df    Resid. Dev  AIC
-## 1                            377 1487469497499 8607
-## 2 - pool  1   19761182       378 1487489258681 8605
-## 3 - bath  1 3323336670       379 1490812595351 8604</code></pre>
+## 1                            365 1031392922650 8489
+## 2   - ac  1     499072       366 1031393421722 8487
+## 3 - pool  1 4002547236       367 1035395968958 8486</code></pre>
 <p>Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:</p>
 <blockquote>
 <p>price = area + bed + ac + grsize + age + qu + style + lotsize + hgway</p>
@@ -360,12 +382,12 @@ pred_test &lt;-
     mean_diff, mean_lw_bound, mean_up_bound, error_rate
   ) %&gt;%
   distinct()</code></pre>
-<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>0.0162</strong> with an average prediction interval for price between <strong>154376.2123 and 404144.8105</strong> while the average predicted price is <strong>4441.0377</strong></p>
+<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>-0.0008</strong> with an average prediction interval for price between <strong>165218.1125 and 383980.4245</strong> while the average predicted price is <strong>-220.2052</strong></p>
 </div>
 <div id="forward-selection-method" class="section level2">
 <h2>Forward selection method</h2>
 <pre class="r"><code>fw_selection &lt;- stepAIC(base_model, direction = &quot;forward&quot;, steps = 10000)</code></pre>
-<pre><code>## Start:  AIC=8607
+<pre><code>## Start:  AIC=8489
 ## price ~ area + bed + bath + ac + grsize + pool + age + qu + style + 
 ##     lotsize + hgway</code></pre>
 <pre class="r"><code>fw_selection$anova</code></pre>
@@ -382,7 +404,7 @@ pred_test &lt;-
 ## 
 ## 
 ##   Step Df Deviance Resid. Df    Resid. Dev  AIC
-## 1                        377 1487469497499 8607</code></pre>
+## 1                        365 1031392922650 8489</code></pre>
 <p>Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:</p>
 <blockquote>
 <p>price = area + bed + bath + ac + grsize + pool + age + qu + style + lotsize + hgway</p>
@@ -413,64 +435,64 @@ pred_test &lt;-
     mean_diff, mean_lw_bound, mean_up_bound, error_rate
   ) %&gt;%
   distinct()</code></pre>
-<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>0.0169</strong> with an average prediction interval for price between <strong>154082.1158 and 404850.6155</strong> while the average predicted price is <strong>4646.892</strong></p>
+<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>0.0007</strong> with an average prediction interval for price between <strong>167550.6728 and 382464.6462</strong> while the average predicted price is <strong>188.1858</strong></p>
 </div>
 <div id="best-subset-selection-method" class="section level2">
 <h2>Best subset selection method</h2>
 <pre class="r"><code>best_selection &lt;- stepAIC(base_model, direction = &quot;both&quot;, steps = 10000)</code></pre>
-<pre><code>## Start:  AIC=8607
+<pre><code>## Start:  AIC=8489
 ## price ~ area + bed + bath + ac + grsize + pool + age + qu + style + 
 ##     lotsize + hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## - pool     1     19761182 1487489258681 8605
-## - bath     1   3340169914 1490809667413 8606
-## &lt;none&gt;                    1487469497499 8607
-## - bed      1  11664156512 1499133654010 8608
-## - ac       1  12993138973 1500462636472 8608
-## - hgway    1  14077933078 1501547430577 8609
-## - lotsize  1  23059806094 1510529303593 8611
-## - grsize   1  38350793782 1525820291281 8615
-## - age      1  97233327212 1584702824711 8630
-## - style    1 112362188740 1599831686239 8633
-## - qu       1 153315512556 1640785010055 8643
-## - area     1 894267506508 2381737004007 8788
+## - ac       1       499072 1031393421722 8487
+## - pool     1   3988560818 1035381483469 8488
+## &lt;none&gt;                    1031392922650 8489
+## - hgway    1   8278351414 1039671274064 8490
+## - bed      6  54529105459 1085922028109 8497
+## - bath     6  69749490825 1101142413475 8502
+## - grsize   1  43948535885 1075341458536 8503
+## - style    1  51436046367 1082828969017 8506
+## - lotsize  1  55169021091 1086561943741 8507
+## - age      1  81193023243 1112585945894 8516
+## - qu       2 335395681838 1366788604488 8594
+## - area     1 499484822635 1530877745285 8640
 ## 
-## Step:  AIC=8605
-## price ~ area + bed + bath + ac + grsize + age + qu + style + 
+## Step:  AIC=8487
+## price ~ area + bed + bath + grsize + pool + age + qu + style + 
 ##     lotsize + hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## - bath     1   3323336670 1490812595351 8604
-## &lt;none&gt;                    1487489258681 8605
-## - bed      1  11647405885 1499136664566 8606
-## - ac       1  12973438480 1500462697161 8606
-## - hgway    1  14128753986 1501618012667 8607
-## + pool     1     19761182 1487469497499 8607
-## - lotsize  1  23075072384 1510564331064 8609
-## - grsize   1  38350424166 1525839682846 8613
-## - age      1  97232989324 1584722248005 8628
-## - style    1 113314957979 1600804216660 8632
-## - qu       1 153467126784 1640956385465 8641
-## - area     1 896935104337 2384424363018 8787
+## - pool     1   4002547236 1035395968958 8486
+## &lt;none&gt;                    1031393421722 8487
+## - hgway    1   8314301582 1039707723304 8488
+## + ac       1       499072 1031392922650 8489
+## - bed      6  54597209573 1085990631295 8495
+## - bath     6  69754398081 1101147819803 8500
+## - grsize   1  43951503345 1075344925067 8501
+## - style    1  51852177423 1083245599145 8504
+## - lotsize  1  57408951579 1088802373301 8506
+## - age      1  83983751700 1115377173422 8515
+## - qu       2 336155733795 1367549155517 8592
+## - area     1 500630905774 1532024327496 8639
 ## 
-## Step:  AIC=8604
-## price ~ area + bed + ac + grsize + age + qu + style + lotsize + 
+## Step:  AIC=8486
+## price ~ area + bed + bath + grsize + age + qu + style + lotsize + 
 ##     hgway
 ## 
 ##           Df    Sum of Sq           RSS  AIC
-## &lt;none&gt;                    1490812595351 8604
-## + bath     1   3323336670 1487489258681 8605
-## - hgway    1  13731315854 1504543911205 8606
-## - ac       1  13834032071 1504646627423 8606
-## + pool     1      2927938 1490809667413 8606
-## - bed      1  17730052406 1508542647757 8607
-## - lotsize  1  21963137435 1512775732786 8608
-## - grsize   1  37523631151 1528336226502 8612
-## - age      1  94344535486 1585157130837 8626
-## - style    1 116261953664 1607074549015 8631
-## - qu       1 151161221753 1641973817104 8640
-## - area     1 974000034456 2464812629807 8798</code></pre>
+## &lt;none&gt;                    1035395968958 8486
+## + pool     1   4002547236 1031393421722 8487
+## - hgway    1   8673812844 1044069781802 8487
+## + ac       1     14485489 1035381483469 8488
+## - bed      6  51831690212 1087227659170 8493
+## - bath     6  68740864007 1104136832965 8499
+## - grsize   1  43709374668 1079105343626 8500
+## - style    1  54069481566 1089465450524 8504
+## - lotsize  1  55018132274 1090414101232 8504
+## - age      1  83217610363 1118613579321 8514
+## - qu       2 333928778968 1369324747926 8591
+## - area     1 501382200974 1536778169932 8638</code></pre>
 <pre class="r"><code>best_selection$anova</code></pre>
 <pre><code>## Stepwise Model Path 
 ## Analysis of Deviance Table
@@ -480,14 +502,14 @@ pred_test &lt;-
 ##     lotsize + hgway
 ## 
 ## Final Model:
-## price ~ area + bed + ac + grsize + age + qu + style + lotsize + 
+## price ~ area + bed + bath + grsize + age + qu + style + lotsize + 
 ##     hgway
 ## 
 ## 
 ##     Step Df   Deviance Resid. Df    Resid. Dev  AIC
-## 1                            377 1487469497499 8607
-## 2 - pool  1   19761182       378 1487489258681 8605
-## 3 - bath  1 3323336670       379 1490812595351 8604</code></pre>
+## 1                            365 1031392922650 8489
+## 2   - ac  1     499072       366 1031393421722 8487
+## 3 - pool  1 4002547236       367 1035395968958 8486</code></pre>
 <p>Based on the outcome, the lowest AIC represents the ideal model, generates the following formula:</p>
 <blockquote>
 <p>price = area + bed + ac + grsize + age + qu + style + lotsize + hgway</p>
@@ -518,10 +540,12 @@ pred_test &lt;-
     mean_diff, mean_lw_bound, mean_up_bound, error_rate
   ) %&gt;%
   distinct()</code></pre>
-<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>0.0162</strong> with an average prediction interval for price between <strong>154376.2123 and 404144.8105</strong> while the average predicted price is <strong>4441.0377</strong></p>
+<p>Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of <strong>-0.0008</strong> with an average prediction interval for price between <strong>165218.1125 and 383980.4245</strong> while the average predicted price is <strong>-220.2052</strong></p>
 </div>
-<div id="step-wise-subset-selection-method" class="section level2">
-<h2>Step-wise subset selection method</h2>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>The final model is:<br />
+price = -2303242 + 132.6 x area - 8319.8 x bed - 18433.2 x ac + 20575.0 x grsize + 1224.7 x age - 50768.6 qu - 9046.8 x style + 0.7 x lotsize - 36541.6 x hgway</p>
 </div>
 
 

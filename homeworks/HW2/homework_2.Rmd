@@ -38,12 +38,10 @@ re_data <- read_table("data/RealEstateSales.txt") %>%
     bed = as.factor(bed),
     bath = as.factor(bath),
     ac = as.factor(ac),
-    grsize = as.factor(grsize),
+    grsize = as.factor(ifelse(grsize < 3, "2 or less", "3 or more")),
     pool = as.factor(pool),
     age = 2022 - age,
-    qu = as.factor(qu),
-    style = as.factor(style),
-    
+    qu = as.factor(qu)
   )
 ```
 
@@ -208,5 +206,7 @@ Thus the calculation of the final model from backward selection on the hold out 
 
 ## Conclusion
 
-The final model is:  
-  price = -2303242 + 132.6 x area - 8319.8 x bed - 18433.2 x ac + 20575.0 x grsize + 1224.7 x age - 50768.6 qu - 9046.8
+The final model is given by best subset selection method:  
+  price = -2303242 + 132.6 x area - 8319.8 x bed - 18433.2 x ac + 20575.0 x grsize + 1224.7 x age - 50768.6 qu - 9046.8 x style + 0.7 x lotsize - 36541.6 x hgway  
+  
+For homework purposes, this model suffices. However, for enhancement, there will be a follow up with a better analysis

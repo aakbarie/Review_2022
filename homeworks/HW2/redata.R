@@ -56,7 +56,7 @@ Bayes.reg.out <- MCMCregress(price~ area+lotsize)
 summary(Bayes.reg.out)
 plot(Bayes.reg.out)
 X.te = cbind(dat.test[,2],dat.test[,11])
-=]ol.,,.pr.price = lm(price~ area+lotsize)
+pr.price = lm(price~ area+lotsize)
 summary(pr.price)
 prd.price <- predict.lm(pr.price,newdata=dat.test[2:12], interval="prediction")
 reg.class.test <- predict.lm(y.lm,newdata=dat.test[2:12], interval="prediction")
@@ -78,7 +78,7 @@ for (i in 1:11)
 	print(summary(pr.price)$coeff)
 }
 X = as.matrix(X.tr[,1])
-X2 = as.matrix(X.tr[,2:11]
+X2 = as.matrix(X.tr[,2:11])
 
 for (i in 2:11)
 {
@@ -196,6 +196,3 @@ error.rate = (m.t/m)
 plot(conf.price[,1],dat.test[,1])
 
 
-Bayes.reg.out <- MCMCregress(Y.tr ~ X.tr[,1:2]+X.tr[,7:10])
-summary(Bayes.reg.out)
-plot(Bayes.reg.out)

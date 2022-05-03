@@ -11,8 +11,11 @@ The 13 variables are:
 |	Finished square feet | Finished area of residence (square feet) |
 |	Number of bedrooms | Total number of bedrooms in residence |
 |	Number of bathrooms	| Total number of bathrooms in residence |
+| AC | Presence or absence of Airconditioning: 1 if yes; 0 otherwise |
 |	Garage size | Number of cars that garage will hold |
 |	Pool | Presence or absence of swimming pool: 1 if yes; 0 otherwise |
 | Year built | Year property was originally constructed |
 | Quality	Index | for quality of construction: 1 indicates high quality; 2 indicates medium quality; 3 indicates low quality |
+| Style | Qualitive indicator of architectural style |
 | Lot size | Lot size (square feet) |
+| Adjacent Highway | Presence or absence of Highway: 1 if yes; 0 otherwise |
