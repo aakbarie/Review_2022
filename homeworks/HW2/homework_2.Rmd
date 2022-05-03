@@ -1,6 +1,6 @@
 ---
 title: "Homework 2 – Chapter 3"
-subtitle: "Linear regression model using subsets selection methods"
+subtitle: "Linear regression model using step-wise subsets selection methods"
 author: "Akbar Akbari Esfahani"
 date: "4/30/2022"
 output: 
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 options(
   "scipen" = 100, 
-  "digits" = 2
+  "digits" = 4
 )
 library(MASS)
 library(tidyverse)
@@ -33,7 +33,18 @@ The data is from a city assessor that was interested in predicting home sale pri
 Read in data and look at variables and data structure
 ```{r data_read}
 re_data <- read_table("data/RealEstateSales.txt") %>% 
-  glimpse()
+  glimpse() %>%
+  mutate(
+    bed = as.factor(bed),
+    bath = as.factor(bath),
+    ac = as.factor(ac),
+    grsize = as.factor(grsize),
+    pool = as.factor(pool),
+    age = 2022 - age,
+    qu = as.factor(qu),
+    style = as.factor(style),
+    
+  )
 ```
 
 As a first step of performing the required tasks of the homework, we need to create a training and testing set for the data
@@ -107,7 +118,7 @@ pred_test <-
   distinct()
 ```
 
-Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r pred_test$error_rate`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
 
 ## Forward selection method
 
@@ -150,7 +161,7 @@ pred_test <-
   distinct()
 ```
 
-Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r pred_test$error_rate`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
 
 ## Best subset selection method
 
@@ -193,4 +204,9 @@ pred_test <-
   distinct()
 ```
 
-Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r round(pred_test$error_rate, 2)`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+Thus the calculation of the final model from backward selection on the hold out testset yields an error rate of **`r pred_test$error_rate`** with an average prediction interval for price between **`r pred_test$mean_lw_bound` and `r pred_test$mean_up_bound`** while the average predicted price is **`r pred_test$mean_diff`**
+
+## Conclusion
+
+The final model is:  
+  price = -2303242 + 132.6 x area - 8319.8 x bed - 18433.2 x ac + 20575.0 x grsize + 1224.7 x age - 50768.6 qu - 9046.8
